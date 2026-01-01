@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Cloudflare Dark Mode
 // @namespace    http://tampermonkey.net/
-// @version      1.1
+// @version      1.2
 // @description  add dark mode to the cloudflare dashboard
 // @author       kyle_A_10000 ChatGPT
 // @match        https://dash.cloudflare.com/*
