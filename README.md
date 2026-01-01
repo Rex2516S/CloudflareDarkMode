@@ -6,10 +6,22 @@ paste [file](./cf_dark_mode.js) to the tapermonkey
 
 save and reaload the clouflare page
 
-## Others:
+## Features:
 ✅ Pure CSS injection, does not break Cloudflare functionality
 
 ✅ Supports Cloudflare SPA page navigation
+
+✅ Uses an engineering-grade approach
+
+✅ One-time initialization
+
+✅ Fixed style element ID
+
+✅ State managed via localStorage
+
+✅ CSS only overrides Cloudflare component semantic layers
+
+✅ Fully SPA-safe
 
 ⚠ Cloudflare class names are often obfuscated/hashed; future UI updates may require minor adjustments
 

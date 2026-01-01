@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Cloudflare Dark Mode
 // @namespace    http://tampermonkey.net/
-// @version      1.0
+// @version      1.1
 // @description  add dark mode to the cloudflare dashboard
 // @author       kyle_A_10000 ChatGPT
 // @match        https://dash.cloudflare.com/*
@@ -12,122 +12,155 @@
 (function () {
   'use strict';
 
-  GM_addStyle(`
-    /* ===== 全局背景 ===== */
-    html, body {
-      background-color: #0e1117 !important;
-      color: #c9d1d9 !important;
-    }
+  const STYLE_ID = 'cf-dark-style';
+  const BTN_ID = 'cf-dark-toggle';
+  const STORAGE_KEY = 'cf-dark-enabled';
 
-    /* 主容器 */
-    [class*="AppShell"],
-    [class*="Layout"],
-    [class*="Page"],
-    main {
-      background-color: #0e1117 !important;
-    }
+  /* ========= Dark Theme CSS（Cloudflare 定向） ========= */
+  const darkCSS = `
+  /* 页面基础 */
+  html, body {
+    background: #0e1117 !important;
+    color: #c9d1d9 !important;
+  }
 
-    /* 卡片 / 面板 */
-    div[class*="Card"],
-    div[class*="Panel"],
-    section,
-    article {
-      background-color: #161b22 !important;
-      color: #c9d1d9 !important;
-      border-color: #30363d !important;
-    }
+  /* Cloudflare App Root */
+  #app, [data-testid="app-root"] {
+    background: #0e1117 !important;
+  }
 
-    /* 顶部导航栏 */
-    header,
-    nav {
-      background-color: #010409 !important;
-      border-bottom: 1px solid #30363d !important;
-    }
+  /* 顶栏 / 侧栏 */
+  header, nav, aside {
+    background: #010409 !important;
+    border-color: #30363d !important;
+  }
 
-    /* 侧边栏 */
-    aside {
-      background-color: #010409 !important;
-      border-right: 1px solid #30363d !important;
-    }
+  /* 主内容区域 */
+  main {
+    background: #0e1117 !important;
+  }
 
-    /* 表格 */
-    table {
-      background-color: #0e1117 !important;
-      color: #c9d1d9 !important;
-    }
+  /* 卡片 / Panel */
+  [class*="Card"],
+  [class*="Panel"],
+  [class*="Box"] {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    color: #c9d1d9 !important;
+  }
 
-    th {
-      background-color: #161b22 !important;
-      border-color: #30363d !important;
-    }
+  /* 表格 */
+  table {
+    background: #0e1117 !important;
+    color: #c9d1d9 !important;
+  }
+  th {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+  }
+  td {
+    border-color: #30363d !important;
+  }
 
-    td {
-      border-color: #30363d !important;
-    }
+  /* 输入组件 */
+  input, textarea, select {
+    background: #0d1117 !important;
+    color: #c9d1d9 !important;
+    border-color: #30363d !important;
+  }
+  input::placeholder, textarea::placeholder {
+    color: #8b949e !important;
+  }
 
-    tr:hover {
-      background-color: #1f2933 !important;
-    }
+  /* 按钮 */
+  button {
+    background: #21262d !important;
+    color: #c9d1d9 !important;
+    border-color: #30363d !important;
+  }
+  button:hover {
+    background: #30363d !important;
+  }
 
-    /* 输入框 / 下拉框 */
-    input,
-    textarea,
-    select {
-      background-color: #0d1117 !important;
-      color: #c9d1d9 !important;
-      border: 1px solid #30363d !important;
-    }
+  /* 链接 */
+  a {
+    color: #58a6ff !important;
+  }
+  a:hover {
+    color: #79c0ff !important;
+  }
 
-    input::placeholder,
-    textarea::placeholder {
-      color: #8b949e !important;
-    }
+  /* 弹窗 */
+  [role="dialog"],
+  [class*="Modal"] {
+    background: #161b22 !important;
+    border-color: #30363d !important;
+    color: #c9d1d9 !important;
+  }
+  `;
 
-    /* 按钮 */
-    button {
-      background-color: #21262d !important;
-      color: #c9d1d9 !important;
-      border: 1px solid #30363d !important;
-    }
+  /* ========= 状态 ========= */
+  const enabled = () => localStorage.getItem(STORAGE_KEY) === '1';
 
-    button:hover {
-      background-color: #30363d !important;
-    }
+  function enableDark() {
+    if (document.getElementById(STYLE_ID)) return;
+    const style = document.createElement('style');
+    style.id = STYLE_ID;
+    style.textContent = darkCSS;
+    document.head.appendChild(style);
+    localStorage.setItem(STORAGE_KEY, '1');
+    updateButton();
+  }
 
-    /* 链接 */
-    a {
-      color: #58a6ff !important;
-    }
+  function disableDark() {
+    const style = document.getElementById(STYLE_ID);
+    if (style) style.remove();
+    localStorage.setItem(STORAGE_KEY, '0');
+    updateButton();
+  }
 
-    a:hover {
-      color: #79c0ff !important;
-    }
+  /* ========= Toggle Button ========= */
+  function updateButton() {
+    const btn = document.getElementById(BTN_ID);
+    if (!btn) return;
+    btn.textContent = enabled() ? '🌙 Dark ON' : '☀️ Dark OFF';
+  }
 
-    /* 弹窗 / Modal */
-    [role="dialog"],
-    [class*="Modal"] {
-      background-color: #161b22 !important;
-      color: #c9d1d9 !important;
-      border-color: #30363d !important;
-    }
+  function createButton() {
+    if (document.getElementById(BTN_ID)) return;
 
-    /* 滚动条（Chrome / Edge） */
-    ::-webkit-scrollbar {
-      width: 10px;
-      height: 10px;
-    }
+    const btn = document.createElement('div');
+    btn.id = BTN_ID;
+    btn.style.cssText = `
+      position: fixed;
+      right: 20px;
+      bottom: 20px;
+      z-index: 99999;
+      padding: 8px 14px;
+      background: #161b22;
+      color: #c9d1d9;
+      border: 1px solid #30363d;
+      border-radius: 999px;
+      font-size: 12px;
+      cursor: pointer;
+      user-select: none;
+      box-shadow: 0 6px 20px rgba(0,0,0,.35);
+    `;
 
-    ::-webkit-scrollbar-track {
-      background: #0e1117;
-    }
+    btn.onclick = () => (enabled() ? disableDark() : enableDark());
+    document.body.appendChild(btn);
+    updateButton();
+  }
 
-    ::-webkit-scrollbar-thumb {
-      background: #30363d;
-      border-radius: 6px;
-    }
+  /* ========= Init（只执行一次） ========= */
+  function init() {
+    createButton();
+    if (enabled()) enableDark();
+  }
 
-    ::-webkit-scrollbar-thumb:hover {
-      background: #484f58;
-    }
-  `);
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
+  } else {
+    init();
+  }
 })();
