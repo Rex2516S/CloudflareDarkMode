@@ -14,7 +14,7 @@
 
   const STYLE_ID = 'cf-dark-style';
   const BTN_ID = 'cf-dark-toggle';
-  const STORAGE_KEY = 'cf-dark-enabled';
+  const STORAGE_KEY = 'cf-theme-mode';
 
   /* ========= Dark Theme CSS（Cloudflare 定向） ========= */
   const darkCSS = `
@@ -99,23 +99,41 @@
   }
   `;
 
-  /* ========= 状态 ========= */
-  const enabled = () => localStorage.getItem(STORAGE_KEY) === '1';
+  /* ========= OLED Theme CSS ========= */
+  const oledCSS = darkCSS
+    .replace(/#0e1117/g, '#000000')
+    .replace(/#010409/g, '#000000')
+    .replace(/#161b22/g, '#000000')
+    .replace(/#0d1117/g, '#000000')
+    .replace(/#21262d/g, '#111111')
+    .replace(/#30363d/g, '#333333');
 
-  function enableDark() {
-    if (document.getElementById(STYLE_ID)) return;
-    const style = document.createElement('style');
-    style.id = STYLE_ID;
-    style.textContent = darkCSS;
-    document.head.appendChild(style);
-    localStorage.setItem(STORAGE_KEY, '1');
-    updateButton();
+  /* ========= 状态 ========= */
+  const THEMES = ['light', 'dark', 'oled'];
+
+  function getTheme() {
+    let t = localStorage.getItem(STORAGE_KEY);
+    // 迁移旧配置
+    if (!t && localStorage.getItem('cf-dark-enabled') === '1') t = 'dark';
+    return THEMES.includes(t) ? t : 'light';
   }
 
-  function disableDark() {
+  function setTheme(t) {
     const style = document.getElementById(STYLE_ID);
-    if (style) style.remove();
-    localStorage.setItem(STORAGE_KEY, '0');
+    if (t === 'light') {
+      if (style) style.remove();
+    } else {
+      const css = t === 'oled' ? oledCSS : darkCSS;
+      if (!style) {
+        const s = document.createElement('style');
+        s.id = STYLE_ID;
+        s.textContent = css;
+        document.head.appendChild(s);
+      } else {
+        style.textContent = css;
+      }
+    }
+    localStorage.setItem(STORAGE_KEY, t);
     updateButton();
   }
 
@@ -123,7 +141,9 @@
   function updateButton() {
     const btn = document.getElementById(BTN_ID);
     if (!btn) return;
-    btn.textContent = enabled() ? '🌙 Dark ON' : '☀️ Dark OFF';
+    const t = getTheme();
+    const labels = { light: '☀️ Light', dark: '🌙 Dark', oled: '🖤 OLED' };
+    btn.textContent = labels[t];
   }
 
   function createButton() {
@@ -147,7 +167,11 @@
       box-shadow: 0 6px 20px rgba(0,0,0,.35);
     `;
 
-    btn.onclick = () => (enabled() ? disableDark() : enableDark());
+    btn.onclick = () => {
+      const current = getTheme();
+      const next = THEMES[(THEMES.indexOf(current) + 1) % THEMES.length];
+      setTheme(next);
+    };
     document.body.appendChild(btn);
     updateButton();
   }
@@ -155,7 +179,7 @@
   /* ========= Init（只执行一次） ========= */
   function init() {
     createButton();
-    if (enabled()) enableDark();
+    setTheme(getTheme());
   }
 
   if (document.readyState === 'loading') {

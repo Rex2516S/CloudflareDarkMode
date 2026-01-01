@@ -1,12 +1,16 @@
 # CloudflareDarkMode
-### add cloudflare dashboard a dark theme
+### Add a customizable dark mode (Dark/OLED) to the Cloudflare dashboard
 
 ## How to use:
-paste [file](./cf_dark_mode.js) to the tapermonkey
-
-save and reaload the clouflare page
+1. Install the [Tampermonkey](https://www.tampermonkey.net/) extension.
+2. Create a new script and paste the content of [cf_dark_mode.js](./cf_dark_mode.js).
+3. Save and reload the Cloudflare dashboard page.
 
 ## Features:
+✅ **Multiple Themes**: Switch between Light, Dark (GitHub Dimmed style), and OLED (Pure Black).
+
+✅ **One-Click Toggle**: Floating button to cycle through themes instantly.
+
 ✅ Pure CSS injection, does not break Cloudflare functionality
 
 ✅ Supports Cloudflare SPA page navigation
@@ -25,7 +29,7 @@ save and reaload the clouflare page
 
 ⚠ Cloudflare class names are often obfuscated/hashed; future UI updates may require minor adjustments
 
-🎯 Theme style inspired by GitHub Dark / GitHub Dark Dimmed
+🎯 Theme styles inspired by GitHub Dark / GitHub Dark Dimmed
 
 Give a star plssss
 ## Link
